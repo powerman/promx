@@ -47,7 +47,7 @@ func ExampleState_basic() {
 
 // This example shows how to attach constant labels (like a service or component name)
 // to every observation of a State gauge.
-func ExampleState_with_labels() {
+func ExampleState_withLabels() {
 	reg := prometheus.NewRegistry()
 	gauge := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "component_state",

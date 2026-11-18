@@ -26,7 +26,6 @@ jobs:
       - uses: jdx/mise-action@v5
         with:
           minimum_release_age: 7d
-      - run: git reset --hard # Work around https://github.com/jdx/mise/discussions/8270.
 
       - uses: powerman/.github/.github/actions/cache-go-and-tools@main
 

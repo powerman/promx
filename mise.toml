@@ -38,7 +38,7 @@ gh = 'latest'
 
 
 [env]
-PNPM_CONFIG_VIRTUAL_STORE_TYPE = 'project' # Fix https://github.com/jdx/mise/discussions/15328.
+PNPM_CONFIG_VIRTUAL_STORE_TYPE = 'project' # Fixed in 2026.11.1, remove after updating min_version.
 
 
 [vars]
@@ -106,16 +106,17 @@ run = [
 
 [tasks.'bump:deps']
 description = 'Upgrade dependencies of all Go modules'
-shell = 'bash -c'
 run = '''
-set -euo pipefail
 # Nested modules may replace the root one by a local path and depend on its requirements,
 # so the root module goes first.
 # Modules in testdata/ and vendor/ are fixtures.
-mapfile -t mods < <(git ls-files -- '*/go.mod' \
-    ':(exclude,glob)**/testdata/**' ':(exclude,glob)**/vendor/**')
-for dir in . "${mods[@]%/go.mod}"; do
-    (cd "$dir" && go get -u -t ./... && go mod tidy)
+nested=$(git ls-files -- '*/go.mod' ':(exclude,glob)**/testdata/**' ':(exclude,glob)**/vendor/**')
+IFS='
+' # Split paths only by lines.
+for mod in go.mod $nested; do
+    dir=$(dirname "$mod")
+    go -C "$dir" get -u -t ./...
+    go -C "$dir" mod tidy
 done
 '''
 
@@ -188,6 +189,7 @@ run = 'go tool cover -func={{vars.cover}} | tail -n 1 | xargs echo'
 [tasks.'cover:go:browse']
 description = 'Show Go test coverage in a browser'
 depends = 'cover:go:generate'
+env.TMPDIR = "{{ get_env(name='BROWSER_TMPDIR', default=get_env(name='TMPDIR', default='/tmp')) }}"
 run = 'go tool cover -html={{vars.cover}}'
 
 [tasks.'changelog:skip-commit']
@@ -198,14 +200,11 @@ run = 'git rev-parse --verify "${usage_commit}" >> .cliffignore'
 [tasks.'cover:go:generate']
 hide = true
 depends = 'cachedir'
-sources = ['**/*.go']
-outputs = ['{{vars.cover}}']
 run = '''
 gotestsum -- \
     -coverpkg="$(go list ./... | paste -s -d,)" \
     -coverprofile {{vars.cover}} \
     ./...
-go tool cover -html={{vars.cover}} -o {{vars.cover}}.html
 '''
 
 # Runs a command which changes files, except files with git attribute "vendored"

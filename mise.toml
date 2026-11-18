@@ -1,4 +1,4 @@
-# jdx/mise-action installs only releases older than a day, so a newer one would fail CI.
+# jdx/mise-action installs only releases older than a week, so a newer one would fail CI.
 min_version = '2026.11.1'
 
 [settings]

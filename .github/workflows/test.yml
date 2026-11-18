@@ -25,7 +25,7 @@ jobs:
 
       - uses: jdx/mise-action@v5
         with:
-          version: 2026.11.1 # Test the oldest mise allowed by min_version in mise.toml.
+          minimum_release_age: 7d
       - run: git reset --hard # Work around https://github.com/jdx/mise/discussions/8270.
 
       - uses: powerman/.github/.github/actions/cache-go-and-tools@main
